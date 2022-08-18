@@ -1,7 +1,7 @@
 import { ImageGalleryItem } from './Item/ImageGalleryItem';
 import { ImageGalleryList} from './ImageGallery.styled'
 
-export const ImageGallery = ({ options }) => {
+ const ImageGallery = ({ options }) => {
   return (
     <ImageGalleryList>
       {options.map(option => (
@@ -10,3 +10,5 @@ export const ImageGallery = ({ options }) => {
     </ImageGalleryList>
   );
 };
+
+export default ImageGallery;

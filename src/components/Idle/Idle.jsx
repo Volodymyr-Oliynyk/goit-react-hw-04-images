@@ -1,9 +1,11 @@
-import {IdleSection} from './Idle.styled';
+import { IdleSection } from './Idle.styled';
 
-export const Idle = () => {
-    return (
-        <IdleSection>
-        <p>Enter your search query!</p>
-        </IdleSection>
-    );
-}
+const Idle = () => {
+  return (
+    <IdleSection>
+      <p>Enter your search query!</p>
+    </IdleSection>
+  );
+};
+
+export default Idle;

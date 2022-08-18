@@ -5,7 +5,6 @@ import {
   SearchButton,
 } from './Searchbarstyled';
 import { Formik } from 'formik';
-
 import { BsSearch } from 'react-icons/bs';
 
 const Searchbar = ({ onSubmit }) => {
@@ -13,16 +12,15 @@ const Searchbar = ({ onSubmit }) => {
     <SearchbarHeader>
       <Formik
         initialValues={{ query: '' }}
-        onSubmit={(values, actions) => {
-          onSubmit(values.query);
-          actions.resetForm();
+        onSubmit={({ query }, { resetForm }) => {
+          onSubmit(query);
+          resetForm();
         }}
-        
       >
-        {props => (
+        {({ values, handleChange }) => (
           <SearchForm>
             <SearchButton type="submit">
-              <BsSearch/>
+              <BsSearch />
             </SearchButton>
             <SearchInput
               type="text"
@@ -30,8 +28,8 @@ const Searchbar = ({ onSubmit }) => {
               autoFocus
               name="query"
               placeholder="Search images and photos"
-              value={props.values.query}
-              onChange={props.handleChange}
+              value={values.query}
+              onChange={handleChange}
             />
           </SearchForm>
         )}

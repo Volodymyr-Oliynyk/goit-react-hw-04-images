@@ -1,97 +1,90 @@
-import { ImageGallery } from 'components/ImageGallery/ImageGallery';
 import Searchbar from 'components/Searchbar';
-import { Component } from 'react';
+import ImageGallery from 'components/ImageGallery';
+import Idle from 'components/Idle';
+import UncorrectSearch from 'components/UncorrectSearch';
+import { useState, useEffect } from 'react';
 import { AppWrapper } from './components/common/AppWrapper';
-import { Idle } from './components/Idle/Idle';
-import { UncorrectSearch } from './components/UncorrectSearch/UncorrectSearch';
 import { LoadMoreBtn } from './components/common/LoadMoreBtn';
 import { LoaderSpinner } from './components/common/Loader/Loader';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as API from 'services/api';
 
-export class App extends Component {
-  state = {
-    searchValue: '',
-    page: 1,
-    status: 'idle',
-    hits: [],
-    totalhits: null,
-    lastpage: null,
-  };
 
-  componentDidUpdate(_, prevState) {
-    const { page, searchValue } = this.state;
-    if (page !== 1 && prevState.page !== page) {
-      this.setState({ status: 'loading' });
+export const App = () => {
+  const [searchValue, setSearchValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('idle');
+  const [hits, setHits] = useState([]);
+  const [totalhits, setTotalhits] = useState(null);
+  const [lastpage, setLastpage] = useState(null);
+
+  useEffect(() => {
+    if (searchValue === '') {
+      return;
+    } else {
+      setStatus('loading');
       API.fetchGallery({ page, q: searchValue }).then(result => {
-        this.setState(prevState => ({
-          status: 'resolved',
-          hits: [...prevState.hits, ...result.data.hits],
-        }));
+        setTotalhits(result.data.totalHits);
+        setLastpage(Math.ceil(result.data.totalHits / 12));
+        setHits(prevHits =>
+          page === 1
+            ? [...result.data.hits]
+            : [...prevHits, ...result.data.hits]
+        );
+        setStatus('resolved');
       });
     }
-    if (page > 2) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }
+  }, [page, searchValue]);
 
-  handleFormSubmit = searchValue => {
+  useEffect(() => {
+    window.scrollBy({
+      top: document.body.scrollHeight,
+      behavior: 'smooth',
+    });
+  }, [hits]);
+
+  const handleFormSubmit = searchValue => {
     if (searchValue.trim() === '') {
       toast.warn('Please enter a search term!');
     } else {
-      this.setState({
-        status: 'loading',
-        searchValue,
-        page: 1,
-      });
-      API.fetchGallery({ q: searchValue, page: 1 }).then(result => {
-        this.setState({
-          status: 'resolved',
-          hits: result.data.hits,
-          totalhits: result.data.totalHits,
-          lastpage: Math.ceil(result.data.totalHits / 12),
-        });
-      });
+      setStatus('loading');
+      setSearchValue(searchValue);
+      setPage(1);
+      setHits([]);
+      setTotalhits(null);
+      setLastpage(null);
     }
   };
 
-  loadNextPage = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const loadNextPage = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { page, status, hits, totalhits, lastpage } = this.state;
-
-    return (
-      <AppWrapper>
-           <Searchbar onSubmit={this.handleFormSubmit} />
-        {status === 'idle' && <Idle />}
-        {status === 'loading' && <LoaderSpinner />}
-        {status === 'resolved' && totalhits > 0 && (
-          <ImageGallery options={hits} />
-        )}
-        {totalhits === 0 && status === 'resolved' && <UncorrectSearch />}
-        {totalhits > 12 && page !== lastpage && (
-          <LoadMoreBtn type="button" onClick={this.loadNextPage}>
-            load more
-          </LoadMoreBtn>
-        )}
-        <ToastContainer
-          position="top-center"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </AppWrapper>
-    );
-  }
+  return (
+    <AppWrapper>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {status === 'idle' && <Idle />}
+      {status === 'loading' && <LoaderSpinner />}
+      {totalhits > 0 && <ImageGallery options={hits} />}
+      {totalhits === 0 && status === 'resolved' && <UncorrectSearch />}
+      {totalhits > 12 && page !== lastpage && (
+        <LoadMoreBtn type="button" onClick={loadNextPage}>
+          load more
+        </LoadMoreBtn>
+      )}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </AppWrapper>
+  );
 }
+
