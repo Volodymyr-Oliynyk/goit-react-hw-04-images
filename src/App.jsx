@@ -47,14 +47,14 @@ export const App = () => {
   const handleFormSubmit = searchValue => {
     if (searchValue.trim() === '') {
       toast.warn('Please enter a search term!');
-    } else {
+    } 
       setStatus('loading');
       setSearchValue(searchValue);
       setPage(1);
       setHits([]);
       setTotalhits(null);
       setLastpage(null);
-    }
+    
   };
 
   const loadNextPage = () => {
